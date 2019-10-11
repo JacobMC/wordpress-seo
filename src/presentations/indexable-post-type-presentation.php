@@ -8,6 +8,7 @@
 namespace Yoast\WP\Free\Presentations;
 
 use Yoast\WP\Free\Helpers\Post_Type_Helper;
+use Yoast\WP\Free\Wrappers\WP_Rewrite_Wrapper;
 
 /**
  * Class Indexable_Post_Type_Presentation
@@ -20,12 +21,51 @@ class Indexable_Post_Type_Presentation extends Indexable_Presentation {
 	protected $post_type_helper;
 
 	/**
+	 * @var WP_Rewrite_Wrapper
+	 */
+	protected $wp_rewrite_wrapper;
+
+	/**
 	 * Indexable_Post_Type_Presentation constructor.
 	 *
-	 * @param Post_Type_Helper $post_type_helper The post type helper.
+	 * @param Post_Type_Helper   $post_type_helper   The post type helper.
+	 * @param WP_Rewrite_Wrapper $wp_rewrite_wrapper The WP_Rewrite wrapper.
 	 */
-	public function __construct( Post_Type_Helper $post_type_helper ) {
-		$this->post_type_helper = $post_type_helper;
+	public function __construct(
+		Post_Type_Helper $post_type_helper,
+		WP_Rewrite_Wrapper $wp_rewrite_wrapper
+	) {
+		$this->post_type_helper   = $post_type_helper;
+		$this->wp_rewrite_wrapper = $wp_rewrite_wrapper;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function generate_canonical() {
+		if ( $this->model->canonical ) {
+			return $this->model->canonical;
+		}
+
+		$canonical = get_permalink( $this->model->object_id );
+
+		// Fix paginated pages canonical, but only if the page is truly paginated.
+		$page_number = \get_query_var( 'page' );
+		if ( $page_number > 1 ) {
+			$num_pages = $this->model->number_of_pages;
+			if ( $num_pages && $page_number <= $num_pages ) {
+				if ( ! $this->wp_rewrite_wrapper->get()->using_permalinks() ) {
+
+					$canonical = \add_query_arg( 'page', $page_number, $canonical );
+				}
+				else {
+					var_dump( $canonical );
+					$canonical = \user_trailingslashit( \trailingslashit( $canonical ) . $page_number );
+				}
+			}
+		}
+
+		return $this->canonical_helper->after_generate( $canonical );
 	}
 
 	/**

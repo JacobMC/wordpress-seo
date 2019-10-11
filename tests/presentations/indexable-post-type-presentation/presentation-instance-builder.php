@@ -3,6 +3,7 @@
 namespace Yoast\WP\Free\Tests\Presentations\Indexable_Post_Type_Presentation;
 
 use Mockery;
+use Yoast\WP\Free\Helpers\Canonical_Helper;
 use Yoast\WP\Free\Helpers\Current_Page_Helper;
 use Yoast\WP\Free\Helpers\Image_Helper;
 use Yoast\WP\Free\Helpers\Options_Helper;
@@ -13,6 +14,7 @@ use Yoast\WP\Free\Presentations\Indexable_Post_Type_Presentation;
 use Yoast\WP\Free\Tests\Mocks\Indexable;
 use Yoast\WP\Free\Tests\Mocks\Meta_Tags_Context;
 use Yoast\WP\Free\Tests\Presentations\Indexable_Presentation\Presentation_Instance_Generator_Builder;
+use Yoast\WP\Free\Wrappers\WP_Rewrite_Wrapper;
 
 /**
  * Trait Presentation_Instance_Builder
@@ -67,6 +69,16 @@ trait Presentation_Instance_Builder {
 	protected $context;
 
 	/**
+	 * @var Canonical_Helper|Mockery\MockInterface
+	 */
+	protected $canonical_helper;
+
+	/**
+	 * @var WP_Rewrite_Wrapper|Mockery\MockInterface
+	 */
+	protected $wp_rewrite_wrapper;
+
+	/**
 	 * Builds an instance of Indexable_Post_Type_Presentation.
 	 */
 	protected function setInstance() {
@@ -79,10 +91,12 @@ trait Presentation_Instance_Builder {
 		$this->current_page_helper = Mockery::mock( Current_Page_Helper::class );
 		$this->context             = Mockery::mock( Meta_Tags_Context::class )->makePartial();
 		$this->url_helper          = Mockery::mock( Url_Helper::class );
+		$this->canonical_helper    = Mockery::mock( Canonical_Helper::class );
+		$this->wp_rewrite_wrapper  = Mockery::mock( WP_Rewrite_Wrapper::class );
 
 		$instance = Mockery::mock(
 			Indexable_Post_Type_Presentation::class,
-			[ $this->post_type_helper ]
+			[ $this->post_type_helper, $this->wp_rewrite_wrapper ]
 		)
 			->shouldAllowMockingProtectedMethods()
 			->makePartial();
@@ -97,7 +111,8 @@ trait Presentation_Instance_Builder {
 			$this->robots_helper,
 			$this->image_helper,
 			$this->options_helper,
-			$this->current_page_helper
+			$this->current_page_helper,
+			$this->canonical_helper
 		);
 
 		$this->set_instance_generators();

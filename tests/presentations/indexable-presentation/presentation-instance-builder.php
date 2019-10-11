@@ -3,8 +3,10 @@
 namespace Yoast\WP\Free\Tests\Presentations\Indexable_Presentation;
 
 use Mockery;
+use Yoast\WP\Free\Generated\Cached_Container;
 use Yoast\WP\Free\Generators\OG_Image_Generator;
 use Yoast\WP\Free\Generators\Twitter_Image_Generator;
+use Yoast\WP\Free\Helpers\Canonical_Helper;
 use Yoast\WP\Free\Helpers\Current_Page_Helper;
 use Yoast\WP\Free\Helpers\Image_Helper;
 use Yoast\WP\Free\Helpers\Open_Graph\Image_Helper as OG_Image_Helper;
@@ -79,6 +81,11 @@ trait Presentation_Instance_Builder {
 	protected $twitter_image_generator;
 
 	/**
+	 * @var Canonical_Helper|Mockery\MockInterface
+	 */
+	protected $canonical_helper;
+
+	/**
 	 * Builds an instance of Indexable_Post_Type_Presentation.
 	 */
 	protected function setInstance() {
@@ -90,6 +97,7 @@ trait Presentation_Instance_Builder {
 		$this->current_page_helper = Mockery::mock( Current_Page_Helper::class );
 		$this->og_image_helper     = Mockery::mock( OG_Image_Helper::class );
 		$this->url_helper          = Mockery::mock( Url_Helper::class );
+		$this->canonical_helper    = Mockery::mock( Canonical_Helper::class );
 
 		$this->context = Mockery::mock( Meta_Tags_Context::class );
 
@@ -108,7 +116,8 @@ trait Presentation_Instance_Builder {
 			$this->robots_helper,
 			$this->image_helper,
 			$this->options_helper,
-			$this->current_page_helper
+			$this->current_page_helper,
+			$this->canonical_helper
 		);
 
 		$this->set_instance_generators();

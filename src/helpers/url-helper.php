@@ -89,10 +89,33 @@ class Url_Helper {
 		}
 
 		$parts = \explode( '.', $path );
-		if ( empty( $parts ) ) {
+		if ( empty( $parts ) || count( $parts ) === 1 ) {
 			return '';
 		}
 
 		return \end( $parts );
+	}
+
+	/**
+	 * Parse the home URL setting to find the base URL for relative URLs.
+	 *
+	 * @param string $path Optional path string.
+	 *
+	 * @return string
+	 */
+	public function create_base_url( $path = null ) {
+		$url = \get_option( 'home' );
+
+		$parts = \wp_parse_url( $url );
+
+		$base_url = \trailingslashit( $parts['scheme'] . '://' . $parts['host'] );
+
+		var_dump( $parts['host'] );
+
+		if ( ! \is_null( $path ) ) {
+			$base_url .= \ltrim( $path, '/' );
+		}
+
+		return $base_url;
 	}
 }
